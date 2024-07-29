@@ -28,7 +28,7 @@ public class UserOrdersTest {
 
         accessToken = given()
                 .contentType("application/json")
-                .body("{ \"email\": \"ordersuser@example.com\", \"password\": \"password123\" }")
+                .body("{ \"email\": \"ordersuser@example.com\", \"password\": \"pass  ÷ññàword123\" }")
                 .when()
                 .post("/auth/login")
                 .then()

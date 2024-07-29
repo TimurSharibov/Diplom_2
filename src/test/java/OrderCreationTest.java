@@ -1,9 +1,13 @@
+import Modeles.User;
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.path.json.mapper.factory.DefaultJackson2ObjectMapperFactory;
 import io.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
 
+import static Utils.DataGenerator.getRandomEmail;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -13,28 +17,43 @@ public class OrderCreationTest {
     private String validIngredientId = "61c0c5a71d1f82001bdaaa72"; // Замените на реальный ID ингредиента
     private String invalidIngredientId = "invalidingredientid"; // Неверный ID ингредиента
 
+    private String email = getRandomEmail();
+
     @Before
     public void setup() {
+        RestAssured.config = RestAssured.config()
+                .objectMapperConfig(new ObjectMapperConfig()
+                        .jackson2ObjectMapperFactory(new DefaultJackson2ObjectMapperFactory()));
         // Устанавливаем базовый URI для всех запросов
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
+
+        User user = new User("timboni@mail.ru","password123","Tim");
+        //user.setName("Tim");
+//        user.setEmail("timboni@mail.ru");
+//        user.setPassword("password123");
+
 
         // Регистрация пользователя
         given()
                 .contentType("application/json")
-                .body("{ \"email\": \"orderuser77@example.com\", \"password\": \"password123\", \"name\": \"Order User\" }")
+                .body(user)
+                .log().all()
                 .when()
                 .post("/auth/register")
                 .then()
+                .log().all()
                 .statusCode(200);
 
         // Логин для получения accessToken
         accessToken = given()
                 .contentType("application/json")
-                .body("{ \"email\": \"orderuser77@example.com\", \"password\": \"password123\" }")
+                .body("{ \"email\": \"" + email + "\", \"password\": \"password123\" }")
+                .log().all()
                 .when()
                 .post("/auth/login")
                 .then()
                 .statusCode(200)
+                .log().all()
                 .extract().path("accessToken");
 
         // Вывод токена для проверки
