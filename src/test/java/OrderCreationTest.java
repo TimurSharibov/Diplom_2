@@ -1,4 +1,4 @@
-import Modeles.User;
+import modeles.User;
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
