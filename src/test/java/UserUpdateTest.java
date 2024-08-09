@@ -1,4 +1,5 @@
 import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
@@ -15,18 +16,19 @@ public class UserUpdateTest {
     private String email = getRandomEmail();
 
     @Before
+    @DisplayName("РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°Р·РѕРІС‹Р№ URI РґР»СЏ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ Рё Р РµРіРёСЃС‚СЂРёСЂСѓРµРј Рё Р»РѕРіРёРЅРёРјСЃСЏ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ accessToken")
     public void setup() {
-        // Устанавливаем базовый URI для всех запросов
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°Р·РѕРІС‹Р№ URI РґР»СЏ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
 
-        // Регистрируем и логинимся для получения accessToken
+        // Р РµРіРёСЃС‚СЂРёСЂСѓРµРј Рё Р»РѕРіРёРЅРёРјСЃСЏ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ accessToken
         Response response = given()
                 .contentType("application/json")
                 .body("{ \"email\": \""+ email + "\", \"password\": \"password123\", \"name\": \"Update User\" }")
                 .when()
                 .post("/auth/register")
                 .then()
-                .body("success", equalTo(true)) // Проверяем, что поле success равно true
+                .body("success", equalTo(true)) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ true
                 .statusCode(200)
                 .extract()
                 .response();
@@ -40,12 +42,12 @@ public class UserUpdateTest {
                 .then()
                 .statusCode(200)
                 .extract().path("accessToken");
-        // Сохраняем токен пользователя
+        // РЎРѕС…СЂР°РЅСЏРµРј С‚РѕРєРµРЅ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 //        accessToken = response.jsonPath().getString("accessToken");
     }
 
     @Test
-    @Step("Обновление данных пользователя с авторизацией")
+    @DisplayName("РћР±РЅРѕРІР»РµРЅРёРµ РґР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ СЃ Р°РІС‚РѕСЂРёР·Р°С†РёРµР№")
     public void updateUserWithAuth() {
         given()
                 .header("Authorization",  accessToken)
@@ -54,12 +56,12 @@ public class UserUpdateTest {
                 .when()
                 .patch("/auth/user")
                 .then()
-                .statusCode(200) // Проверяем, что код ответа 200
-                .body("success", equalTo(true)); // Проверяем, что поле success равно true
+                .statusCode(200) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 200
+                .body("success", equalTo(true)); // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ true
     }
 
     @Test
-    @Step("Обновление данных пользователя без авторизации")
+    @DisplayName("РћР±РЅРѕРІР»РµРЅРёРµ РґР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Р±РµР· Р°РІС‚РѕСЂРёР·Р°С†РёРё")
     public void updateUserWithoutAuth() {
         given()
                 .contentType("application/json")
@@ -67,13 +69,13 @@ public class UserUpdateTest {
                 .when()
                 .patch("/auth/user")
                 .then()
-                .statusCode(401) // Проверяем, что код ответа 401 (Unauthorized)
-                .body("success", equalTo(false)) // Проверяем, что поле success равно false
-                .body("message", equalTo("You should be authorised")); // Проверяем сообщение об ошибке
+                .statusCode(401) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 401 (Unauthorized)
+                .body("success", equalTo(false)) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ false
+                .body("message", equalTo("You should be authorised")); // РџСЂРѕРІРµСЂСЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
     }
 
     @After
-    @Step("Удаление созданного пользователя")
+    @Step("РЈРґР°Р»РµРЅРёРµ СЃРѕР·РґР°РЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ")
     public void deleteUser() {
         if (accessToken != null) {
             given()
@@ -81,7 +83,7 @@ public class UserUpdateTest {
                     .when()
                     .delete("/auth/user")
                     .then()
-                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+                    .statusCode(202); // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 202 (Accepted) РїСЂРё СѓРґР°Р»РµРЅРёРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         }
     }
 }

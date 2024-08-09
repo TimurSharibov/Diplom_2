@@ -1,4 +1,5 @@
 import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Before;
@@ -10,34 +11,35 @@ import static org.hamcrest.Matchers.equalTo;
 public class UserLoginTest {
 
     @Before
+    @Step("РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°Р·РѕРІС‹Р№ URI РґР»СЏ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ")
     public void setup() {
-        // Устанавливаем базовый URI для всех запросов
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°Р·РѕРІС‹Р№ URI РґР»СЏ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
     }
 
     @Test
-    @Step("Логин с корректными учетными данными")
+    @DisplayName("Р›РѕРіРёРЅ СЃ РєРѕСЂСЂРµРєС‚РЅС‹РјРё СѓС‡РµС‚РЅС‹РјРё РґР°РЅРЅС‹РјРё")
     public void loginWithValidCredentials() {
-        // Регистрация пользователя
+        // Р РµРіРёСЃС‚СЂР°С†РёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         given()
                 .contentType("application/json")
                 .body("{ \"email\": \"loginuser@example.com\", \"password\": \"password123\", \"name\": \"Login User\" }")
                 .when()
                 .post("/auth/register");
 
-        // Логин с корректными учетными данными
+        // Р›РѕРіРёРЅ СЃ РєРѕСЂСЂРµРєС‚РЅС‹РјРё СѓС‡РµС‚РЅС‹РјРё РґР°РЅРЅС‹РјРё
         given()
                 .contentType("application/json")
                 .body("{ \"email\": \"loginuser@example.com\", \"password\": \"password123\" }")
                 .when()
                 .post("/auth/login")
                 .then()
-                .statusCode(200) // Проверяем, что код ответа 200
-                .body("success", equalTo(true)); // Проверяем, что поле success равно true
+                .statusCode(200) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 200
+                .body("success", equalTo(true)); // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ true
     }
 
     @Test
-    @Step("Логин с некорректными учетными данными")
+    @DisplayName("Р›РѕРіРёРЅ СЃ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹РјРё СѓС‡РµС‚РЅС‹РјРё РґР°РЅРЅС‹РјРё")
     public void loginWithInvalidCredentials() {
         given()
                 .contentType("application/json")
@@ -45,8 +47,8 @@ public class UserLoginTest {
                 .when()
                 .post("/auth/login")
                 .then()
-                .statusCode(401) // Проверяем, что код ответа 401 (Unauthorized)
-                .body("success", equalTo(false)) // Проверяем, что поле success равно false
-                .body("message", equalTo("email or password are incorrect")); // Проверяем сообщение об ошибке
+                .statusCode(401) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 401 (Unauthorized)
+                .body("success", equalTo(false)) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ false
+                .body("message", equalTo("email or password are incorrect")); // РџСЂРѕРІРµСЂСЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
     }
 }

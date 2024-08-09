@@ -1,4 +1,5 @@
 import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
@@ -12,16 +13,17 @@ import static org.hamcrest.Matchers.equalTo;
 public class UserCreationTest {
 
     private String email = getRandomEmail();
-    private String token; // Объявляем переменную token на уровне класса
+    private String token; // РћР±СЉСЏРІР»СЏРµРј РїРµСЂРµРјРµРЅРЅСѓСЋ token РЅР° СѓСЂРѕРІРЅРµ РєР»Р°СЃСЃР°
 
     @Before
+    @Step("РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°Р·РѕРІС‹Р№ URI РґР»СЏ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ")
     public void setup() {
-        // Устанавливаем базовый URI для всех запросов
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°Р·РѕРІС‹Р№ URI РґР»СЏ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
     }
 
     @Test
-    @Step("Создание уникального пользователя")
+    @DisplayName("РЎРѕР·РґР°РЅРёРµ СѓРЅРёРєР°Р»СЊРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ")
     public void createUniqueUser() {
 
         Response response = given()
@@ -30,38 +32,38 @@ public class UserCreationTest {
                 .when()
                 .post("/auth/register")
                 .then()
-                .statusCode(200) // Проверяем, что код ответа 200
-                .body("success", equalTo(true)) // Проверяем, что поле success равно true
+                .statusCode(200) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 200
+                .body("success", equalTo(true)) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ true
                 .extract()
                 .response();
-        // Сохраняем токен пользователя
+        // РЎРѕС…СЂР°РЅСЏРµРј С‚РѕРєРµРЅ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         token = response.jsonPath().getString("accessToken");
     }
 
     @Test
-    @Step("Создание пользователя, который уже зарегистрирован")
+    @DisplayName("РЎРѕР·РґР°РЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РєРѕС‚РѕСЂС‹Р№ СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ")
     public void createExistingUser() {
-        // Создаем пользователя
+        // РЎРѕР·РґР°РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         given()
                 .contentType("application/json")
                 .body("{ \"email\": \"existingemail@example.com\", \"password\": \"password123\", \"name\": \"Existing User\" }")
                 .when()
                 .post("/auth/register");
 
-        // Пытаемся создать того же пользователя еще раз
+        // РџС‹С‚Р°РµРјСЃСЏ СЃРѕР·РґР°С‚СЊ С‚РѕРіРѕ Р¶Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РµС‰Рµ СЂР°Р·
         given()
                 .contentType("application/json")
                 .body("{ \"email\": \"existingemail@example.com\", \"password\": \"password123\", \"name\": \"Existing User\" }")
                 .when()
                 .post("/auth/register")
                 .then()
-                .statusCode(403) // Проверяем, что код ответа 403 (Forbidden)
-                .body("success", equalTo(false)) // Проверяем, что поле success равно false
-                .body("message", equalTo("User already exists")); // Проверяем сообщение об ошибке
+                .statusCode(403) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 403 (Forbidden)
+                .body("success", equalTo(false)) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ false
+                .body("message", equalTo("User already exists")); // РџСЂРѕРІРµСЂСЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
     }
 
     @Test
-    @Step("Создание пользователя с пропущенным обязательным полем")
+    @DisplayName("РЎРѕР·РґР°РЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ СЃ РїСЂРѕРїСѓС‰РµРЅРЅС‹Рј РѕР±СЏР·Р°С‚РµР»СЊРЅС‹Рј РїРѕР»РµРј")
     public void createUserWithMissingField() {
         given()
                 .contentType("application/json")
@@ -69,13 +71,13 @@ public class UserCreationTest {
                 .when()
                 .post("/auth/register")
                 .then()
-                .statusCode(403) // Проверяем, что код ответа 403 (Forbidden)
-                .body("success", equalTo(false)) // Проверяем, что поле success равно false
-                .body("message", equalTo("Email, password and name are required fields")); // Проверяем сообщение об ошибке
+                .statusCode(403) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 403 (Forbidden)
+                .body("success", equalTo(false)) // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРѕР»Рµ success СЂР°РІРЅРѕ false
+                .body("message", equalTo("Email, password and name are required fields")); // РџСЂРѕРІРµСЂСЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
     }
 
     @After
-    @Step("Удаление созданного пользователя")
+    @Step("РЈРґР°Р»РµРЅРёРµ СЃРѕР·РґР°РЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ")
     public void deleteUser() {
         if (token != null) {
             given()
@@ -83,7 +85,7 @@ public class UserCreationTest {
                     .when()
                     .delete("/auth/user")
                     .then()
-                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+                    .statusCode(202); // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РєРѕРґ РѕС‚РІРµС‚Р° 202 (Accepted) РїСЂРё СѓРґР°Р»РµРЅРёРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         }
     }
 }

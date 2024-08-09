@@ -1,3 +1,4 @@
+import io.qameta.allure.junit4.DisplayName;
 import modeles.User;
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
@@ -10,6 +11,7 @@ import org.junit.Test;
 
 import static Utils.DataGenerator.getRandomEmail;
 import static io.restassured.RestAssured.given;
+import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.Matchers.equalTo;
 
 public class OrderCreationTest {
@@ -21,6 +23,7 @@ public class OrderCreationTest {
     private String email = getRandomEmail();
 
     @Before
+    @DisplayName("Устанавливаем базовый URI для всех запросов и Регистрируем и логинимся для получения accessToken ")
     public void setup() {
         // Устанавливаем базовый URI для всех запросов
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
@@ -51,7 +54,7 @@ public class OrderCreationTest {
     }
 
     @Test
-    @Step("Создание заказа с авторизацией")
+    @DisplayName("Создание заказа с авторизацией")
     public void createOrderWithAuth() {
         Response response = given()
                 .header("Authorization",  accessToken) // Передача токена авторизации
@@ -73,8 +76,9 @@ public class OrderCreationTest {
                 .body("success", equalTo(true)); // Ожидаем, что поле success равно true
     }
 
+
     @Test
-    @Step("Создание заказа без авторизации")
+    @DisplayName("Создание заказа без авторизации")
     public void createOrderWithoutAuth() {
         if (accessToken != null) {
             given()
@@ -103,7 +107,7 @@ public class OrderCreationTest {
     }
 
     @Test
-    @Step("Создание заказа с невалидным хешем ингредиентов")
+    @DisplayName("Создание заказа с невалидным хешем ингредиентов")
     public void createOrderWithInvalidIngredient() {
         Response response = given()
                 .header("Authorization", accessToken) // Передача токена авторизации
@@ -125,7 +129,7 @@ public class OrderCreationTest {
     }
 
     @Test
-    @Step("Создание заказа без ингредиентов")
+    @DisplayName("Создание заказа без ингредиентов")
     public void createOrderWithNoIngredients() {
         Response response = given()
                 .header("Authorization", accessToken) // Передача токена авторизации
@@ -158,6 +162,7 @@ public class OrderCreationTest {
                     .delete("/auth/user")
                     .then()
                     .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+            accessToken = null;
         }
     }
 }
