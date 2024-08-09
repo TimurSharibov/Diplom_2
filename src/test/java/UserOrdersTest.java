@@ -1,15 +1,18 @@
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static Utils.DataGenerator.getRandomEmail;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UserOrdersTest {
 
     private String accessToken;
+    private String email = getRandomEmail();
 
     @Before
     public void setup() {
@@ -17,30 +20,35 @@ public class UserOrdersTest {
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
 
         // Регистрируем и логинимся для получения accessToken
-        accessToken = given()
+        Response response = given()
                 .contentType("application/json")
-                .body("{ \"email\": \"ordersuser@example.com\", \"password\": \"password123\", \"name\": \"Orders User\" }")
+                .body("{ \"email\": \""+ email + "\", \"password\": \"password123\", \"name\": \"Update User\" }")
                 .when()
                 .post("/auth/register")
                 .then()
+                .body("success", equalTo(true)) // Проверяем, что поле success равно true
                 .statusCode(200)
-                .extract().path("accessToken");
+                .extract()
+                .response();
+
 
         accessToken = given()
                 .contentType("application/json")
-                .body("{ \"email\": \"ordersuser@example.com\", \"password\": \"pass  чссаword123\" }")
+                .body("{ \"email\": \""+ email +"\", \"password\": \"password123\" }")
                 .when()
                 .post("/auth/login")
                 .then()
                 .statusCode(200)
                 .extract().path("accessToken");
+        // Сохраняем токен пользователя
+//        accessToken = response.jsonPath().getString("accessToken");
     }
 
     @Test
     @Step("Получение заказов с авторизацией")
     public void getOrdersWithAuth() {
         given()
-                .header("Authorization", "Bearer " + accessToken)
+                .header("Authorization", accessToken)
                 .when()
                 .get("/orders")
                 .then()
@@ -58,5 +66,18 @@ public class UserOrdersTest {
                 .statusCode(401) // Проверяем, что код ответа 401 (Unauthorized)
                 .body("success", equalTo(false)) // Проверяем, что поле success равно false
                 .body("message", equalTo("You should be authorised")); // Проверяем сообщение об ошибке
+    }
+
+    @After
+    @Step("Удаление созданного пользователя")
+    public void deleteUser() {
+        if (accessToken != null) {
+            given()
+                    .header("Authorization", accessToken)
+                    .when()
+                    .delete("/auth/user")
+                    .then()
+                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+        }
     }
 }
