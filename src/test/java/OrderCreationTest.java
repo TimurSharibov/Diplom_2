@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.path.json.mapper.factory.DefaultJackson2ObjectMapperFactory;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,50 +22,39 @@ public class OrderCreationTest {
 
     @Before
     public void setup() {
-        RestAssured.config = RestAssured.config()
-                .objectMapperConfig(new ObjectMapperConfig()
-                        .jackson2ObjectMapperFactory(new DefaultJackson2ObjectMapperFactory()));
         // Устанавливаем базовый URI для всех запросов
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
 
-        User user = new User("timboni@mail.ru","password123","Tim");
-        //user.setName("Tim");
-//        user.setEmail("timboni@mail.ru");
-//        user.setPassword("password123");
-
-
-        // Регистрация пользователя
-        given()
+        // Регистрируем и логинимся для получения accessToken
+        Response response = given()
                 .contentType("application/json")
-                .body(user)
-                .log().all()
+                .body("{ \"email\": \""+ email + "\", \"password\": \"password123\", \"name\": \"Update User\" }")
                 .when()
                 .post("/auth/register")
                 .then()
-                .log().all()
-                .statusCode(200);
+                .body("success", equalTo(true)) // Проверяем, что поле success равно true
+                .statusCode(200)
+                .extract()
+                .response();
 
-        // Логин для получения accessToken
+
         accessToken = given()
                 .contentType("application/json")
-                .body("{ \"email\": \"" + email + "\", \"password\": \"password123\" }")
-                .log().all()
+                .body("{ \"email\": \""+ email +"\", \"password\": \"password123\" }")
                 .when()
                 .post("/auth/login")
                 .then()
                 .statusCode(200)
-                .log().all()
                 .extract().path("accessToken");
-
-        // Вывод токена для проверки
-        System.out.println("Access Token: " + accessToken);
+        // Сохраняем токен пользователя
+//        accessToken = response.jsonPath().getString("accessToken");
     }
 
     @Test
     @Step("Создание заказа с авторизацией")
     public void createOrderWithAuth() {
         Response response = given()
-                .header("Authorization", "Bearer " + accessToken) // Передача токена авторизации
+                .header("Authorization",  accessToken) // Передача токена авторизации
                 .contentType("application/json")
                 .body("{ \"ingredients\": [\"" + validIngredientId + "\"] }") // Корректное тело запроса
                 .log().all() // Логирование запроса
@@ -86,6 +76,14 @@ public class OrderCreationTest {
     @Test
     @Step("Создание заказа без авторизации")
     public void createOrderWithoutAuth() {
+        if (accessToken != null) {
+            given()
+                    .header("Authorization", accessToken)
+                    .when()
+                    .delete("/auth/user")
+                    .then()
+                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+        }
         Response response = given()
                 .contentType("application/json")
                 .body("{ \"ingredients\": [\"" + validIngredientId + "\"] }")
@@ -108,7 +106,7 @@ public class OrderCreationTest {
     @Step("Создание заказа с невалидным хешем ингредиентов")
     public void createOrderWithInvalidIngredient() {
         Response response = given()
-                .header("Authorization", "Bearer " + accessToken) // Передача токена авторизации
+                .header("Authorization", accessToken) // Передача токена авторизации
                 .contentType("application/json")
                 .body("{ \"ingredients\": [\"" + invalidIngredientId + "\"] }")
                 .log().all() // Логирование запроса
@@ -130,7 +128,7 @@ public class OrderCreationTest {
     @Step("Создание заказа без ингредиентов")
     public void createOrderWithNoIngredients() {
         Response response = given()
-                .header("Authorization", "Bearer " + accessToken) // Передача токена авторизации
+                .header("Authorization", accessToken) // Передача токена авторизации
                 .contentType("application/json")
                 .body("{}") // Пустое тело запроса
                 .log().all() // Логирование запроса
@@ -148,5 +146,18 @@ public class OrderCreationTest {
                 .statusCode(400) // Ожидаем код ответа 400 (Bad Request)
                 .body("success", equalTo(false)) // Ожидаем, что поле success равно false
                 .body("message", equalTo("Ingredient ids must be provided")); // Ожидаем сообщение об ошибке
+    }
+
+    @After
+    @Step("Удаление созданного пользователя")
+    public void deleteUser() {
+        if (accessToken != null) {
+            given()
+                    .header("Authorization", accessToken)
+                    .when()
+                    .delete("/auth/user")
+                    .then()
+                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+        }
     }
 }
