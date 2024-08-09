@@ -1,14 +1,16 @@
+import clients.AuthClient;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static Utils.DataGenerator.getRandomEmail;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UserUpdateTest extends BaseTest {
 
+    private String email = getRandomEmail();
     private String accessToken;
     private AuthClient authClient;
 
@@ -17,7 +19,10 @@ public class UserUpdateTest extends BaseTest {
     public void setup() {
         super.setup();
         authClient = new AuthClient();
-        accessToken = authClient.registerAndLoginUser(email, "password123", "Update User");
+        accessToken = authClient.registerUser(email, "password123", "Update User")
+                .then()
+                .extract()
+                .path("accessToken");
     }
 
     @Test

@@ -1,6 +1,7 @@
+import clients.AuthClient;
+import clients.OrdersClient;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
-import modeles.User;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,7 +49,8 @@ public class OrderCreationTest extends BaseTest {
             super.deleteUser(); // Удаляем пользователя для теста без авторизации
         }
 
-        Response response = ordersClient.createOrder(null, orderBody);
+//        accessToken = "invalid Token";
+        Response response = ordersClient.createOrder(accessToken, orderBody);
 
         response.then()
                 .statusCode(401);

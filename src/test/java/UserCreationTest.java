@@ -1,3 +1,4 @@
+import clients.AuthClient;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class UserCreationTest extends BaseTest {
     @Test
     @DisplayName("Создание пользователя с пропущенным обязательным полем")
     public void createUserWithMissingField() {
-        Response response = authClient.registerUser("missingfield@example.com", "password123", null);
+        Response response = authClient.registerUser("missingfield@example.com", null, "userName");
         response.then()
                 .statusCode(403)
                 .body("success", equalTo(false))

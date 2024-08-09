@@ -1,6 +1,7 @@
 package clients;
 
 import io.qameta.allure.Step;
+import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.given;
@@ -19,10 +20,17 @@ public class OrdersClient {
                 .post(ORDERS_ENDPOINT);
     }
 
-    @Step("Получение заказов")
+    @Step("Получение заказов с авторизацией")
     public Response getOrders(String accessToken) {
         return RestAssured.given()
                 .header("Authorization", accessToken)
+                .when()
+                .get(ORDERS_ENDPOINT);
+    }
+
+    @Step("Получение заказов без авторизации")
+    public Response getOrdersWithoutAuth() {
+        return RestAssured.given()
                 .when()
                 .get(ORDERS_ENDPOINT);
     }

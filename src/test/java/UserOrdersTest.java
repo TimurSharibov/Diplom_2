@@ -1,3 +1,5 @@
+import clients.AuthClient;
+import clients.OrdersClient;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
@@ -5,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static Utils.DataGenerator.getRandomEmail;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UserOrdersTest extends BaseTest {
@@ -12,6 +15,7 @@ public class UserOrdersTest extends BaseTest {
     private String accessToken;
     private OrdersClient ordersClient;
     private AuthClient authClient;
+    private String email = getRandomEmail();
 
     @Before
     @DisplayName("Устанавливаем базовый URI для всех запросов и Регистрируем и логинимся для получения accessToken")
@@ -19,7 +23,14 @@ public class UserOrdersTest extends BaseTest {
         super.setup();
         ordersClient = new OrdersClient();
         authClient = new AuthClient();
-        accessToken = authClient.registerAndLoginUser(email, "password123", "Update User");
+        accessToken = authClient.registerUser(email, "password123", "Update User")
+                .then()
+                .extract()
+                .path("accessToken");
+        accessToken = authClient.loginUser(email, "password123")
+                .then()
+                .extract()
+                .path("accessToken");
     }
 
     @Test
@@ -41,11 +52,11 @@ public class UserOrdersTest extends BaseTest {
                 .body("message", equalTo("You should be authorised")); // Проверяем сообщение об ошибке
     }
 
-    @After
-    @Step("Удаление созданного пользователя")
-    public void deleteUser() {
-        if (accessToken != null) {
-            authClient.deleteUser(accessToken);
-        }
-    }
+//    @After
+//    @Step("Удаление созданного пользователя")
+//    public void deleteUser() {
+//        if (accessToken != null) {
+//            authClient.deleteUser(accessToken);
+//        }
+//    }
 }
