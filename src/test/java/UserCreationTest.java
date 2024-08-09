@@ -1,13 +1,18 @@
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static Utils.DataGenerator.getRandomEmail;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UserCreationTest {
+
+    private String email = getRandomEmail();
+    private String token; // Объявляем переменную token на уровне класса
 
     @Before
     public void setup() {
@@ -18,14 +23,19 @@ public class UserCreationTest {
     @Test
     @Step("Создание уникального пользователя")
     public void createUniqueUser() {
-        given()
+
+        Response response = given()
                 .contentType("application/json")
-                .body("{ \"email\": \"uniqueemail@example.com\", \"password\": \"password123\", \"name\": \"Unique User\" }")
+                .body("{ \"email\": \"" + email + "\", \"password\": \"password123\", \"name\": \"Unique User\" }")
                 .when()
                 .post("/auth/register")
                 .then()
                 .statusCode(200) // Проверяем, что код ответа 200
-                .body("success", equalTo(true)); // Проверяем, что поле success равно true
+                .body("success", equalTo(true)) // Проверяем, что поле success равно true
+                .extract()
+                .response();
+        // Сохраняем токен пользователя
+        token = response.jsonPath().getString("accessToken");
     }
 
     @Test
@@ -62,5 +72,18 @@ public class UserCreationTest {
                 .statusCode(403) // Проверяем, что код ответа 403 (Forbidden)
                 .body("success", equalTo(false)) // Проверяем, что поле success равно false
                 .body("message", equalTo("Email, password and name are required fields")); // Проверяем сообщение об ошибке
+    }
+
+    @After
+    @Step("Удаление созданного пользователя")
+    public void deleteUser() {
+        if (token != null) {
+            given()
+                    .header("Authorization", token)
+                    .when()
+                    .delete("/auth/user")
+                    .then()
+                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
+        }
     }
 }
