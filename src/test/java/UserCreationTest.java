@@ -1,91 +1,45 @@
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static Utils.DataGenerator.getRandomEmail;
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-public class UserCreationTest {
+public class UserCreationTest extends BaseTest {
 
     private String email = getRandomEmail();
-    private String token; // Объявляем переменную token на уровне класса
-
-    @Before
-    @Step("Устанавливаем базовый URI для всех запросов")
-    public void setup() {
-        // Устанавливаем базовый URI для всех запросов
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/api";
-    }
+    private AuthClient authClient = new AuthClient();
 
     @Test
     @DisplayName("Создание уникального пользователя")
     public void createUniqueUser() {
+        Response response = authClient.registerUser(email, "password123", "Unique User");
+        response.then()
+                .statusCode(200)
+                .body("success", equalTo(true));
 
-        Response response = given()
-                .contentType("application/json")
-                .body("{ \"email\": \"" + email + "\", \"password\": \"password123\", \"name\": \"Unique User\" }")
-                .when()
-                .post("/auth/register")
-                .then()
-                .statusCode(200) // Проверяем, что код ответа 200
-                .body("success", equalTo(true)) // Проверяем, что поле success равно true
-                .extract()
-                .response();
-        // Сохраняем токен пользователя
-        token = response.jsonPath().getString("accessToken");
+        accessToken = response.jsonPath().getString("accessToken");
     }
 
     @Test
     @DisplayName("Создание пользователя, который уже зарегистрирован")
     public void createExistingUser() {
-        // Создаем пользователя
-        given()
-                .contentType("application/json")
-                .body("{ \"email\": \"existingemail@example.com\", \"password\": \"password123\", \"name\": \"Existing User\" }")
-                .when()
-                .post("/auth/register");
+        authClient.registerUser("existingemail@example.com", "password123", "Existing User");
 
-        // Пытаемся создать того же пользователя еще раз
-        given()
-                .contentType("application/json")
-                .body("{ \"email\": \"existingemail@example.com\", \"password\": \"password123\", \"name\": \"Existing User\" }")
-                .when()
-                .post("/auth/register")
-                .then()
-                .statusCode(403) // Проверяем, что код ответа 403 (Forbidden)
-                .body("success", equalTo(false)) // Проверяем, что поле success равно false
-                .body("message", equalTo("User already exists")); // Проверяем сообщение об ошибке
+        Response response = authClient.registerUser("existingemail@example.com", "password123", "Existing User");
+        response.then()
+                .statusCode(403)
+                .body("success", equalTo(false))
+                .body("message", equalTo("User already exists"));
     }
 
     @Test
     @DisplayName("Создание пользователя с пропущенным обязательным полем")
     public void createUserWithMissingField() {
-        given()
-                .contentType("application/json")
-                .body("{ \"email\": \"missingfield@example.com\", \"password\": \"password123\" }")
-                .when()
-                .post("/auth/register")
-                .then()
-                .statusCode(403) // Проверяем, что код ответа 403 (Forbidden)
-                .body("success", equalTo(false)) // Проверяем, что поле success равно false
-                .body("message", equalTo("Email, password and name are required fields")); // Проверяем сообщение об ошибке
-    }
-
-    @After
-    @Step("Удаление созданного пользователя")
-    public void deleteUser() {
-        if (token != null) {
-            given()
-                    .header("Authorization", token)
-                    .when()
-                    .delete("/auth/user")
-                    .then()
-                    .statusCode(202); // Проверяем, что код ответа 202 (Accepted) при удалении пользователя
-        }
+        Response response = authClient.registerUser("missingfield@example.com", "password123", null);
+        response.then()
+                .statusCode(403)
+                .body("success", equalTo(false))
+                .body("message", equalTo("Email, password and name are required fields"));
     }
 }
