@@ -5,7 +5,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static Utils.DataGenerator.getRandomEmail;
+import static utils.DataGenerator.getRandomEmail;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UserUpdateTest extends BaseTest {

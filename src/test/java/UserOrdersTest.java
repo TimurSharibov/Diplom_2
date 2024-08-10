@@ -1,13 +1,10 @@
 import clients.AuthClient;
 import clients.OrdersClient;
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.response.Response;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static Utils.DataGenerator.getRandomEmail;
+import static utils.DataGenerator.getRandomEmail;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UserOrdersTest extends BaseTest {
