@@ -49,11 +49,5 @@ public class UserOrdersTest extends BaseTest {
                 .body("message", equalTo("You should be authorised")); // Проверяем сообщение об ошибке
     }
 
-//    @After
-//    @Step("Удаление созданного пользователя")
-//    public void deleteUser() {
-//        if (accessToken != null) {
-//            authClient.deleteUser(accessToken);
-//        }
-//    }
+
 }
