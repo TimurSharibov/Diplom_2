@@ -4,10 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -36,3 +33,15 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/.idea/
+
+### Build directories ###
+/build/
+/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Maven Wrapper ###
+!.mvn/wrapper/maven-wrapper.jar
